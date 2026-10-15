@@ -1,32 +1,110 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="day">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f6f7f4" />
-    <title>ClearCert — Certificate Registry</title>
+    <meta name="theme-color" content="#eef1e8" />
+    <title>ClearCert — Certificate Verification</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="#top" aria-label="ClearCert home"><span class="brand-mark">C</span> clearcert</a>
-      <div class="wallet-area"><span id="connection-status" class="connection-status">Wallet not connected</span><button id="connect-wallet" class="button button-dark">Connect wallet</button></div>
+      <a class="brand" href="#top" aria-label="ClearCert home" data-view="home"><span class="brand-mark"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 2.75 27 7v8.2c0 7-4.4 11.8-11 14.05C10.4 27 6 22.2 6 15.2V7l10-4.25Z" /><path d="m11.4 15.6 3.1 3.1 6.3-6.5" /></svg></span><span class="brand-name">clearcert<span class="brand-tagline">TRUST, MADE VERIFIABLE</span></span></a>
+      <div class="wallet-area">
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to night theme" aria-pressed="false"><span id="theme-icon" class="theme-toggle-icon" aria-hidden="true">☀</span><span id="theme-label">Day mode</span></button>
+        <button id="connect-wallet" class="wallet-switch" type="button" aria-label="Connect account" aria-pressed="false">
+          <span class="switch-track" aria-hidden="true"><span class="switch-knob"><span class="power-icon"></span></span></span>
+          <span id="connect-label">Connect account</span>
+        </button>
+      </div>
     </header>
 
     <main id="top">
-      <section class="hero">
-        <div class="hero-copy"><p class="eyebrow">A simple public registry</p><h1>Trust the record.<br /><span>Keep details private.</span></h1><p class="hero-description">Issue a tamper-evident certificate record, then verify it with the holder’s details and private verification key.</p></div>
-        <div class="hero-card"><div class="hero-card-top"><span>ON-CHAIN RECORD</span><span class="live-dot"></span></div><div class="hash-lines"><i></i><i></i><i></i><i></i><i></i></div><div class="hero-card-footer"><span>Personal details stay off-chain</span><span>⌁</span></div></div>
+      <section class="hero home-view">
+        <div class="hero-copy"><p class="eyebrow">CLEARCERT <span class="eyebrow-divider">/</span> CREDENTIALS YOU CAN TRUST</p><h1 tabindex="-1">Earned with effort.<br /><span>Verified with trust.</span></h1><p class="hero-description">Issue secure digital certificates and let recipients prove their achievements privately. The record is protected on-chain; personal details stay with the holder.</p><div class="hero-actions"><button class="button button-primary" type="button" data-view="issue">Issue a certificate <span aria-hidden="true">→</span></button><button class="button hero-secondary-action" type="button" data-view="verify">Verify a certificate <span aria-hidden="true">↗</span></button></div><a class="hero-link" href="#blockchain-demo" data-home-target="blockchain-demo">How ClearCert works <span aria-hidden="true">↓</span></a></div>
+        <div class="hero-card"><div class="hero-card-top"><span>RECORD PREVIEW</span><span class="live-dot"></span></div><div class="record-preview"><span class="record-label">CERTIFICATE</span><strong>Certificate of achievement</strong><span class="record-rule"></span><span class="record-institution">NORTHSTAR INSTITUTE</span><span class="record-reference">PRIVATE DETAILS · STORED OFF-CHAIN</span></div><div class="hero-card-footer"><span>SECURED ON THE BLOCKCHAIN</span><span>CC / 01</span></div></div>
+      </section>
+
+      <section class="mode-chooser home-view" aria-labelledby="mode-chooser-heading">
+        <div class="mode-chooser-heading">
+          <p class="eyebrow">GET STARTED</p>
+          <h2 id="mode-chooser-heading">Choose a workspace</h2>
+        </div>
+        <div class="mode-options">
+          <button class="mode-card mode-card-issue" type="button" data-view="issue">
+            <span class="mode-card-number">01 / ISSUER</span>
+            <strong>Issue a certificate</strong>
+            <span>Create a private certificate record and share its verification key.</span>
+            <span class="mode-card-action">Click here <span aria-hidden="true">↗</span></span>
+          </button>
+          <button class="mode-card mode-card-verify" type="button" data-view="verify">
+            <span class="mode-card-number">02 / PUBLIC LOOKUP</span>
+            <strong>Verify a certificate</strong>
+            <span>Check a certificate using its details and the holder’s key.</span>
+            <span class="mode-card-action">Click here <span aria-hidden="true">→</span></span>
+          </button>
+        </div>
+      </section>
+
+      <section id="blockchain-demo" class="blockchain-demo home-view" tabindex="-1" aria-labelledby="blockchain-demo-heading">
+        <div class="blockchain-demo-heading">
+          <p class="eyebrow">BEHIND THE RECORD</p>
+          <h2 id="blockchain-demo-heading">A certificate, secured step by step</h2>
+          <p>See how a private certificate becomes a trusted on-chain proof.</p>
+        </div>
+        <div class="chain-flow-wrap">
+          <span class="chain-progress" aria-hidden="true"></span>
+          <ol class="chain-flow" aria-label="Certificate blockchain process">
+            <li class="chain-step chain-step-prepare">
+              <span class="chain-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M9 4.75h9l6 6V27H9z" /><path d="M18 5v7h6M13 17h7M13 21h7" /></svg></span>
+              <span class="chain-step-number">01</span>
+              <strong>Prepare</strong>
+              <span class="chain-step-copy">Certificate details stay private.</span>
+            </li>
+            <li class="chain-step chain-step-process">
+              <span class="chain-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 5v5M16 22v5M5 16h5M22 16h5M8.2 8.2l3.5 3.5M20.3 20.3l3.5 3.5M23.8 8.2l-3.5 3.5M11.7 20.3l-3.5 3.5" /><circle cx="16" cy="16" r="5" /></svg></span>
+              <span class="chain-step-number">02</span>
+              <strong>Process</strong>
+              <span class="chain-step-copy">A secure fingerprint is created.</span>
+            </li>
+            <li class="chain-step chain-step-block">
+              <span class="chain-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="m16 4 11 6-11 6-11-6zM5 16l11 6 11-6M5 22l11 6 11-6M5 10v12M27 10v12M16 16v12" /></svg></span>
+              <span class="chain-step-number">03</span>
+              <strong>Add to a block</strong>
+              <span class="chain-step-copy">The fingerprint joins the blockchain.</span>
+            </li>
+            <li class="chain-step chain-step-confirm">
+              <span class="chain-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 3.5 26 7v8c0 6.3-4 10.7-10 13.1C10 25.7 6 21.3 6 15V7z" /><path d="m11.5 15.5 3 3 6-6" /></svg></span>
+              <span class="chain-step-number">04</span>
+              <strong>Confirmed</strong>
+              <span class="chain-step-copy">The record is ready to verify.</span>
+            </li>
+          </ol>
+        </div>
+        <p class="blockchain-demo-note">Personal certificate details are never written to the blockchain.</p>
+      </section>
+
+      <section class="information-grid home-view" aria-label="About and contact">
+        <article id="about-us" class="information-card" tabindex="-1">
+          <p class="eyebrow">ABOUT US</p>
+          <h2>Trust the record. Keep details private.</h2>
+          <p>ClearCert helps institutions issue tamper-evident certificate records and lets recipients prove their credentials. Certificate details stay with the holder; the blockchain stores a protected fingerprint and public issuance metadata.</p>
+        </article>
+        <article id="contact-us" class="information-card contact-card" tabindex="-1">
+          <p class="eyebrow">CONTACT US</p>
+          <h2>Need help with a certificate?</h2>
+          <p>For questions about a certificate or its verification key, contact the institution that issued it. For help with this ClearCert installation, reach out to your system administrator.</p>
+        </article>
       </section>
 
       <div id="network-warning" class="notice notice-warning" hidden></div>
       <div id="api-warning" class="notice notice-warning" hidden></div>
       <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
 
-      <section class="workspace-grid">
-        <section class="panel issue-panel">
-          <div class="panel-heading"><div><p class="eyebrow">ISSUER CONSOLE</p><h2>Issue a certificate</h2></div><span class="number-badge">01</span></div>
-          <p class="panel-intro">Only an approved issuer wallet can publish new records. Enter the certificate information exactly as it should be verified.</p>
+      <section class="workspace-grid" hidden>
+        <section class="panel issue-panel" tabindex="-1">
+          <div class="panel-heading"><div><p class="eyebrow">ISSUER CONSOLE</p><h2>Issue a certificate</h2></div><button class="button button-outline panel-home-button" type="button" data-view="home">← Home</button></div>
+          <p class="panel-intro">Only an approved issuer account can publish new records. Enter the certificate information exactly as it should be verified.</p>
           <form id="issue-form" class="form-grid">
             <label>Certificate holder<input name="holder" required maxlength="120" autocomplete="off" placeholder="e.g. Alex Morgan" /></label>
             <label>Certificate ID<input name="certificateId" required maxlength="80" autocomplete="off" placeholder="e.g. CERT-2026-0142" /></label>
@@ -36,11 +114,11 @@
             <button class="button button-primary full-width" type="submit">Issue certificate <span>↗</span></button>
           </form>
           <div id="issued-key" class="key-card" hidden></div>
-          <details class="admin-tools"><summary>Issuer administration</summary><p>Connected contract owner can approve issuer wallet addresses.</p><form id="issuer-form" class="inline-form"><input name="issuerAddress" aria-label="Issuer wallet address" placeholder="0x… issuer wallet" required /><button class="button button-outline" type="submit">Approve issuer</button></form></details>
+          <details class="admin-tools"><summary>Issuer administration</summary><p>The connected contract owner can approve issuer account addresses.</p><form id="issuer-form" class="inline-form"><input name="issuerAddress" aria-label="Issuer account address" placeholder="0x… issuer account" required /><button class="button button-outline" type="submit">Approve issuer</button></form></details>
         </section>
 
-        <section class="panel verify-panel">
-          <div class="panel-heading"><div><p class="eyebrow">PUBLIC LOOKUP</p><h2>Verify a certificate</h2></div><span class="number-badge number-badge-light">02</span></div>
+        <section class="panel verify-panel" tabindex="-1">
+          <div class="panel-heading"><div><p class="eyebrow">PUBLIC LOOKUP</p><h2>Verify a certificate</h2></div><button class="button button-outline panel-home-button" type="button" data-view="home">← Home</button></div>
           <p class="panel-intro">Enter the same certificate information and the private verification key shared with the holder.</p>
           <form id="verify-form" class="form-grid">
             <label>Certificate holder<input name="holder" required maxlength="120" autocomplete="off" placeholder="Name on the certificate" /></label>
@@ -55,24 +133,34 @@
         </section>
       </section>
 
-      <section class="panel certificate-list-panel" aria-labelledby="certificate-list-heading">
-        <div class="panel-heading">
-          <div><p class="eyebrow">ON-CHAIN REGISTRY</p><h2 id="certificate-list-heading">Issued certificates</h2></div>
-          <button id="refresh-certificates" class="button button-outline" type="button">Refresh list</button>
-        </div>
-        <p class="panel-intro">Public record references only. Holder names and certificate details remain private.</p>
-        <div id="certificate-list-status" class="certificate-list-status" role="status" aria-live="polite">Loading certificate records…</div>
-        <div class="certificate-table-wrap" hidden>
-          <table class="certificate-table">
-            <thead><tr><th>Record reference</th><th>Issuer</th><th>Issued</th><th>Status</th></tr></thead>
-            <tbody id="certificate-list"></tbody>
-          </table>
+      <section id="login-view" class="login-view" aria-labelledby="login-heading">
+        <div class="panel login-panel">
+          <p class="eyebrow">CLEARCERT ACCOUNT</p>
+          <h1 id="login-heading" tabindex="-1">Sign in to continue</h1>
+          <p class="login-intro">Access the certificate issuer and verification workspace.</p>
+          <p class="login-demo-notice">Demo sign-in: enter any valid email and password to continue. Your details are not saved.</p>
+          <form id="login-form" class="login-form">
+            <label>Email address<input name="email" type="email" required autocomplete="off" placeholder="you@example.com" /></label>
+            <label>Password<input name="password" type="password" required autocomplete="new-password" placeholder="Enter any password" /></label>
+            <button class="button button-primary" type="submit">Sign in to ClearCert <span aria-hidden="true">→</span></button>
+          </form>
+          <p id="login-feedback" class="login-feedback" role="status" aria-live="polite" hidden></p>
+          <p class="login-help">Need access? Contact your ClearCert administrator.</p>
         </div>
       </section>
 
-      <section class="steps"><div><span>01</span><p><strong>Issuer creates a record</strong><br />A randomized digest is saved on-chain.</p></div><div><span>02</span><p><strong>Holder keeps their key</strong><br />The key is shared through a trusted channel.</p></div><div><span>03</span><p><strong>Anyone can verify</strong><br />Matching details prove the record exists.</p></div></section>
+      <section class="steps home-view"><div><span>01</span><p><strong>Issuer creates a record</strong><br />A randomized digest is saved on-chain.</p></div><div><span>02</span><p><strong>Holder keeps their key</strong><br />The key is shared through a trusted channel.</p></div><div><span>03</span><p><strong>Anyone can verify</strong><br />Matching details prove the record exists.</p></div></section>
+
     </main>
-    <footer><span>ClearCert · Local development starter</span><span>Records are public. Certificate details remain with the holder.</span></footer>
+    <footer>
+      <span>ClearCert · Local development starter</span>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="#about-us" data-home-target="about-us">About</a>
+        <a href="#contact-us" data-home-target="contact-us">Contact</a>
+        <button type="button" data-view="logout">Sign out</button>
+      </nav>
+      <span>Certificate details remain with the holder.</span>
+    </footer>
     <script type="module" src="/app.js"></script>
   </body>
 </html>

@@ -31,9 +31,6 @@
       }
       .brand { display: flex; align-items: center; gap: 10px; font-weight: 750; letter-spacing: -.5px; }
       .brand-mark { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: var(--forest); color: var(--green); }
-      .service { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
-      .dot { width: 8px; height: 8px; border-radius: 50%; background: #a7b09f; }
-      .dot.online { background: #79bb49; }
       main { max-width: 1160px; margin: 0 auto; padding: 54px 24px 64px; }
       .eyebrow { margin: 0 0 12px; color: #71816d; font: 500 10px "Consolas", monospace; letter-spacing: 1.5px; }
       .intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
@@ -81,7 +78,6 @@
   <body>
     <header>
       <div class="brand"><span class="brand-mark">C</span> ClearCert Registry</div>
-      <div class="service"><span id="service-dot" class="dot"></span><span id="service-status">Connecting to registry…</span></div>
     </header>
     <main>
       <section class="intro">
@@ -187,13 +183,8 @@
         message.textContent = "Loading records from the blockchain…";
         tableWrap.hidden = true;
         try {
-          const [healthResponse, recordsResponse] = await Promise.all([
-            fetch("/api/health"),
-            fetch("/api/certificates")
-          ]);
-          const health = await healthResponse.json();
+          const recordsResponse = await fetch("/api/certificates");
           const result = await recordsResponse.json();
-          if (!healthResponse.ok) throw new Error(health.error || "Backend health check failed.");
           if (!recordsResponse.ok) throw new Error(result.error || "Could not load certificate records.");
           if (!Array.isArray(result.certificates)) throw new Error("The backend returned an invalid record list.");
 
@@ -201,12 +192,8 @@
           document.querySelector("#total-count").textContent = certificates.length;
           document.querySelector("#valid-count").textContent = certificates.filter((item) => !item.revoked).length;
           document.querySelector("#revoked-count").textContent = certificates.filter((item) => item.revoked).length;
-          document.querySelector("#service-status").textContent = "Connected · chain " + health.chainId;
-          document.querySelector("#service-dot").classList.add("online");
           renderRecords();
         } catch (error) {
-          document.querySelector("#service-status").textContent = "Registry unavailable";
-          document.querySelector("#service-dot").classList.remove("online");
           message.textContent = error.message;
           message.className = "message error";
           message.hidden = false;

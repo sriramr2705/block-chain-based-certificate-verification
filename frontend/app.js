@@ -9,25 +9,124 @@ const ABI = [
 
 const $ = (selector) => document.querySelector(selector);
 const connectButton = $("#connect-wallet");
-const connectionStatus = $("#connection-status");
+const connectLabel = $("#connect-label");
+const themeToggle = $("#theme-toggle");
+const themeLabel = $("#theme-label");
+const themeIcon = $("#theme-icon");
 const message = $("#message");
 const warning = $("#network-warning");
 const apiWarning = $("#api-warning");
 const issueForm = $("#issue-form");
 const verifyForm = $("#verify-form");
 const issuerForm = $("#issuer-form");
+const workspace = $(".workspace-grid");
+const issuePanel = $(".issue-panel");
+const verifyPanel = $(".verify-panel");
+const loginView = $("#login-view");
+const loginForm = $("#login-form");
+const loginFeedback = $("#login-feedback");
+const homeSections = document.querySelectorAll(".home-view");
+const viewButtons = document.querySelectorAll("[data-view]");
 const issuedKey = $("#issued-key");
 const verificationResult = $("#verification-result");
-const certificateList = $("#certificate-list");
-const certificateListStatus = $("#certificate-list-status");
-const certificateTable = $(".certificate-table-wrap");
-const refreshCertificatesButton = $("#refresh-certificates");
 let ethersLib;
 let deployment;
 let provider;
 let signer;
 let contract;
 let account;
+let activeTheme = localStorage.getItem("clearcert-theme") === "night" ? "night" : "day";
+
+function applyTheme(theme) {
+  activeTheme = theme;
+  document.documentElement.dataset.theme = theme;
+  const isDayTheme = theme === "day";
+  themeToggle.setAttribute("aria-pressed", String(isDayTheme));
+  themeToggle.setAttribute("aria-label", `Switch to ${isDayTheme ? "night" : "day"} theme`);
+  themeLabel.textContent = isDayTheme ? "Day mode" : "Night mode";
+  themeIcon.textContent = isDayTheme ? "☀" : "☾";
+  $("meta[name='theme-color']").content = isDayTheme ? "#eef1e8" : "#0b1006";
+  localStorage.setItem("clearcert-theme", theme);
+}
+
+applyTheme(activeTheme);
+themeToggle.addEventListener("click", () => {
+  applyTheme(activeTheme === "night" ? "day" : "night");
+});
+
+function showView(view, targetId = null) {
+  const authenticated = document.documentElement.classList.contains("is-authenticated");
+  if (view === "logout") {
+    document.documentElement.classList.remove("is-authenticated");
+    loginForm.reset();
+    loginFeedback.hidden = true;
+    message.hidden = true;
+    document.querySelectorAll('[data-view="logout"]').forEach((button) => {
+      button.dataset.view = "login";
+      button.textContent = "Sign in";
+    });
+    view = "login";
+    targetId = null;
+  } else if (view !== "login" && !authenticated) {
+    view = "login";
+    targetId = null;
+  }
+
+  const isHome = view === "home";
+  const isWorkspace = view === "issue" || view === "verify";
+  homeSections.forEach((section) => {
+    section.hidden = !isHome;
+  });
+  workspace.hidden = !isWorkspace;
+  workspace.classList.toggle("single-panel", isWorkspace);
+  issuePanel.hidden = view !== "issue";
+  verifyPanel.hidden = view !== "verify";
+  loginView.hidden = view !== "login";
+  const focusTarget = targetId
+    ? document.getElementById(targetId)
+    : isHome
+      ? $(".hero h1")
+      : view === "issue"
+        ? issuePanel
+        : view === "verify"
+          ? verifyPanel
+          : $("#login-heading");
+  focusTarget.focus({ preventScroll: true });
+  if (targetId) {
+    focusTarget.scrollIntoView({ behavior: "smooth" });
+  } else {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+}
+
+viewButtons.forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    showView(button.dataset.view);
+  });
+});
+
+showView("login");
+
+document.querySelectorAll("[data-home-target]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    showView("home", link.dataset.homeTarget);
+  });
+});
+
+loginForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  document.documentElement.classList.add("is-authenticated");
+  loginForm.reset();
+  loginFeedback.hidden = true;
+  document.querySelectorAll('[data-view="login"]').forEach((button) => {
+    button.dataset.view = "logout";
+    button.textContent = "Sign out";
+  });
+  showView("home");
+  showMessage("Demo sign-in complete. Your credentials were not saved.", "success");
+});
 
 async function boot() {
   [ethersLib, deployment] = await Promise.all([
@@ -50,78 +149,13 @@ async function boot() {
     apiWarning.hidden = false;
     apiWarning.textContent = "The certificate API is not running. Start it with npm run backend, then reload this page.";
   });
-  await loadCertificates();
   if (!window.ethereum) {
-    connectionStatus.textContent = "Install a wallet to issue records";
     connectButton.disabled = true;
   } else {
     window.ethereum.on?.("accountsChanged", () => window.location.reload());
     window.ethereum.on?.("chainChanged", () => window.location.reload());
   }
 }
-
-async function loadCertificates() {
-  refreshCertificatesButton.disabled = true;
-  certificateListStatus.textContent = "Loading certificate records…";
-  certificateListStatus.hidden = false;
-  certificateTable.hidden = true;
-  try {
-    const response = await fetch("/api/certificates");
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || "Could not load certificate records.");
-    if (!Array.isArray(result.certificates)) throw new Error("The certificate API returned an invalid record list.");
-
-    certificateList.replaceChildren();
-    for (const certificate of result.certificates) {
-      const row = document.createElement("tr");
-      const reference = document.createElement("td");
-      const digest = document.createElement("code");
-      digest.textContent = `${certificate.digest.slice(0, 10)}…${certificate.digest.slice(-8)}`;
-      digest.title = certificate.digest;
-      const copyButton = document.createElement("button");
-      copyButton.type = "button";
-      copyButton.className = "copy-reference";
-      copyButton.textContent = "Copy";
-      copyButton.setAttribute("aria-label", "Copy full record reference");
-      copyButton.addEventListener("click", async () => {
-        try {
-          await navigator.clipboard.writeText(certificate.digest);
-          showMessage("Record reference copied to clipboard.", "success");
-        } catch (error) {
-          showMessage(`Could not copy record reference: ${error.message}`, "error");
-        }
-      });
-      reference.append(digest, copyButton);
-
-      const issuer = document.createElement("td");
-      issuer.textContent = `${certificate.issuer.slice(0, 8)}…${certificate.issuer.slice(-6)}`;
-      issuer.title = certificate.issuer;
-
-      const issued = document.createElement("td");
-      issued.textContent = new Date(certificate.issuedAt * 1000).toLocaleString();
-
-      const status = document.createElement("td");
-      const badge = document.createElement("span");
-      badge.className = `certificate-status ${certificate.revoked ? "revoked" : "active"}`;
-      badge.textContent = certificate.revoked ? "Revoked" : "Valid";
-      status.append(badge);
-      row.append(reference, issuer, issued, status);
-      certificateList.append(row);
-    }
-
-    certificateTable.hidden = result.certificates.length === 0;
-    certificateListStatus.textContent = result.certificates.length
-      ? `${result.certificates.length} certificate record${result.certificates.length === 1 ? "" : "s"} found.`
-      : "No certificate records have been issued yet.";
-  } catch (error) {
-    certificateListStatus.textContent = error.message;
-  } finally {
-    certificateListStatus.hidden = false;
-    refreshCertificatesButton.disabled = false;
-  }
-}
-
-refreshCertificatesButton.addEventListener("click", loadCertificates);
 
 function showMessage(text, kind = "success") {
   message.className = `notice notice-${kind}`;
@@ -220,7 +254,7 @@ function openCertificate(fields, transactionHash) {
 }
 
 async function connectWallet() {
-  if (!window.ethereum) throw new Error("A browser wallet such as MetaMask is required.");
+  if (!window.ethereum) throw new Error("A compatible browser extension is required to connect.");
   if (!deployment?.contractAddress) throw new Error("Deploy the contract and reload this page first.");
   provider = new ethersLib.BrowserProvider(window.ethereum);
   await provider.send("eth_requestAccounts", []);
@@ -228,21 +262,29 @@ async function connectWallet() {
   account = await signer.getAddress();
   const network = await provider.getNetwork();
   if (Number(network.chainId) !== Number(deployment.chainId)) {
-    throw new Error(`Wrong network. Switch your wallet to ${deployment.network} (chain ID ${deployment.chainId}).`);
+    throw new Error(`Wrong network. Switch your account to ${deployment.network} (chain ID ${deployment.chainId}).`);
   }
   contract = new ethersLib.Contract(deployment.contractAddress, ABI, signer);
-  connectionStatus.textContent = `${account.slice(0, 6)}…${account.slice(-4)}`;
-  connectButton.textContent = "Wallet connected";
+  connectLabel.textContent = "Connected";
+  connectButton.setAttribute("aria-label", "Account connected");
+  connectButton.classList.add("is-on");
+  connectButton.setAttribute("aria-pressed", "true");
 }
 
 connectButton.addEventListener("click", async () => {
   connectButton.disabled = true;
+  connectButton.classList.add("is-connecting");
   try {
     await connectWallet();
     showMessage(`Connected to ${account}.`, "success");
   } catch (error) {
+    connectButton.classList.remove("is-on");
+    connectButton.setAttribute("aria-pressed", "false");
+    connectLabel.textContent = "Connect account";
+    connectButton.setAttribute("aria-label", "Connect account");
     showMessage(error.shortMessage || error.message, "error");
   } finally {
+    connectButton.classList.remove("is-connecting");
     connectButton.disabled = false;
   }
 });
@@ -255,7 +297,7 @@ issueForm.addEventListener("submit", async (event) => {
   try {
     if (!contract) await connectWallet();
     const allowed = await contract.issuers(account);
-    if (!allowed) throw new Error("This wallet is not an approved issuer. Ask the contract owner to approve it.");
+    if (!allowed) throw new Error("This account is not an approved issuer. Ask the contract owner to approve it.");
     const fields = normalizedFields(new FormData(issueForm));
     const secret = newSecret();
     const digest = await certificateDigest(fields, secret);
@@ -286,7 +328,6 @@ issueForm.addEventListener("submit", async (event) => {
     });
     showMessage(`Certificate issued in transaction ${tx.hash}. Keep the key safe and share it privately.`, "success");
     issueForm.reset();
-    await loadCertificates();
   } catch (error) {
     showMessage(error.shortMessage || error.reason || error.message, "error");
   } finally {
@@ -345,7 +386,7 @@ issuerForm.addEventListener("submit", async (event) => {
     const owner = await contract.owner();
     if (owner.toLowerCase() !== account.toLowerCase()) throw new Error("Only the contract owner can approve issuers.");
     const address = new FormData(issuerForm).get("issuerAddress").trim();
-    if (!ethersLib.isAddress(address)) throw new Error("Enter a valid wallet address.");
+    if (!ethersLib.isAddress(address)) throw new Error("Enter a valid account address.");
     const tx = await contract.setIssuer(address, true);
     await tx.wait();
     issuerForm.reset();
