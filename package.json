@@ -1,0 +1,24 @@
+{
+  "name": "certificate-verification-starter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local-first certificate issuance and verification starter using Solidity, Hardhat, and vanilla JavaScript.",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "node": "hardhat node",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "backend": "node backend/server.js",
+    "frontend": "vite --config frontend/vite.config.js --host 127.0.0.1",
+    "test:backend": "node --test backend/certificate.test.js",
+    "build:frontend": "vite build --config frontend/vite.config.js"
+  },
+  "dependencies": {
+    "ethers": "^6.13.4"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.17",
+    "vite": "^6.0.7"
+  }
+}

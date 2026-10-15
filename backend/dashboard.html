@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4f6f1" />
+    <title>ClearCert — Registry dashboard</title>
+    <style>
+      :root {
+        font-family: Inter, "Segoe UI", sans-serif;
+        color: #202820;
+        background: #f4f6f1;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        --ink: #202820;
+        --muted: #747e73;
+        --line: #e2e7df;
+        --green: #c7fa70;
+        --forest: #153c31;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-width: 320px; }
+      header {
+        height: 72px;
+        padding: 0 max(5vw, 24px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+      }
+      .brand { display: flex; align-items: center; gap: 10px; font-weight: 750; letter-spacing: -.5px; }
+      .brand-mark { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: var(--forest); color: var(--green); }
+      .service { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: #a7b09f; }
+      .dot.online { background: #79bb49; }
+      main { max-width: 1160px; margin: 0 auto; padding: 54px 24px 64px; }
+      .eyebrow { margin: 0 0 12px; color: #71816d; font: 500 10px "Consolas", monospace; letter-spacing: 1.5px; }
+      .intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
+      h1 { margin: 0; font-size: clamp(32px, 5vw, 48px); letter-spacing: -2px; }
+      .description { max-width: 540px; margin: 12px 0 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+      button, input { font: inherit; }
+      button { min-height: 42px; padding: 0 15px; border: 0; border-radius: 7px; background: var(--forest); color: #fff; font-size: 12px; font-weight: 650; cursor: pointer; }
+      button:disabled { opacity: .6; cursor: wait; }
+      .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+      .stat, .registry { background: #fff; border: 1px solid var(--line); border-radius: 11px; }
+      .stat { padding: 19px 21px; }
+      .stat-label { color: var(--muted); font-size: 11px; }
+      .stat-value { display: block; margin-top: 9px; font-size: 27px; font-weight: 700; letter-spacing: -1px; }
+      .registry { overflow: hidden; }
+      .registry-header { min-height: 72px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--line); }
+      h2 { margin: 0; font-size: 16px; }
+      .registry-header p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+      .search { width: min(280px, 100%); height: 39px; padding: 0 11px; border: 1px solid var(--line); border-radius: 6px; outline: none; font-size: 12px; }
+      .search:focus { border-color: #8eaa7d; box-shadow: 0 0 0 3px #c7fa7035; }
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; text-align: left; }
+      th { padding: 12px 18px; color: #778174; background: #fbfcfa; font: 500 10px "Consolas", monospace; letter-spacing: .6px; text-transform: uppercase; }
+      td { padding: 15px 18px; border-top: 1px solid #edf0eb; color: #495248; font-size: 12px; white-space: nowrap; }
+      .reference { font: 11px "Consolas", monospace; color: #304b37; }
+      .copy { min-height: 28px; margin-left: 8px; padding: 0 8px; border: 1px solid var(--line); background: #fff; color: #576650; font-size: 10px; }
+      .badge { display: inline-flex; padding: 5px 9px; border-radius: 20px; font-size: 10px; font-weight: 650; }
+      .valid { background: #eff8e7; color: #456139; }
+      .revoked { background: #fff0ec; color: #914333; }
+      .message { padding: 20px; color: var(--muted); font-size: 12px; }
+      .message.error { color: #914333; }
+      .footnote { margin: 15px 2px 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+      @media (max-width: 650px) {
+        header { height: 62px; padding: 0 18px; }
+        main { padding: 38px 16px 48px; }
+        .intro { align-items: flex-start; flex-direction: column; }
+        .intro button { align-self: flex-start; }
+        .stats { gap: 8px; }
+        .stat { padding: 14px 12px; }
+        .stat-value { font-size: 22px; }
+        .registry-header { align-items: stretch; flex-direction: column; }
+        .search { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand"><span class="brand-mark">C</span> ClearCert Registry</div>
+      <div class="service"><span id="service-dot" class="dot"></span><span id="service-status">Connecting to registry…</span></div>
+    </header>
+    <main>
+      <section class="intro">
+        <div>
+          <p class="eyebrow">BACKEND DASHBOARD</p>
+          <h1>Certificate registry</h1>
+          <p class="description">Browse public records published to the blockchain. Private holder names and certificate details are not stored in this registry.</p>
+        </div>
+        <button id="refresh" type="button">Refresh records</button>
+      </section>
+      <section class="stats" aria-label="Registry summary">
+        <div class="stat"><span class="stat-label">Total records</span><strong id="total-count" class="stat-value">—</strong></div>
+        <div class="stat"><span class="stat-label">Valid</span><strong id="valid-count" class="stat-value">—</strong></div>
+        <div class="stat"><span class="stat-label">Revoked</span><strong id="revoked-count" class="stat-value">—</strong></div>
+      </section>
+      <section class="registry">
+        <div class="registry-header">
+          <div><h2>Issued certificates</h2><p id="record-count">Loading records…</p></div>
+          <input id="search" class="search" type="search" placeholder="Filter by record or issuer" aria-label="Filter certificate records" />
+        </div>
+        <div id="list-message" class="message" role="status" aria-live="polite">Loading records from the blockchain…</div>
+        <div id="table-wrap" class="table-wrap" hidden>
+          <table>
+            <thead><tr><th>Record reference</th><th>Issuer</th><th>Issued</th><th>Status</th></tr></thead>
+            <tbody id="records"></tbody>
+          </table>
+        </div>
+      </section>
+      <p class="footnote">Record references are opaque cryptographic digests. They can be copied to share a public record reference, but cannot reveal certificate details or be used to recover a verification key.</p>
+    </main>
+    <script>
+      const refreshButton = document.querySelector("#refresh");
+      const message = document.querySelector("#list-message");
+      const tableWrap = document.querySelector("#table-wrap");
+      const recordsBody = document.querySelector("#records");
+      const search = document.querySelector("#search");
+      let certificates = [];
+
+      function shortAddress(value) {
+        return value ? value.slice(0, 8) + "…" + value.slice(-6) : "Unknown";
+      }
+
+      function renderRecords() {
+        const query = search.value.trim().toLowerCase();
+        const filtered = certificates.filter((record) =>
+          record.digest.toLowerCase().includes(query) || record.issuer.toLowerCase().includes(query)
+        );
+        recordsBody.replaceChildren();
+        for (const record of filtered) {
+          const row = document.createElement("tr");
+          const referenceCell = document.createElement("td");
+          const reference = document.createElement("span");
+          reference.className = "reference";
+          reference.textContent = shortAddress(record.digest);
+          reference.title = record.digest;
+          const copy = document.createElement("button");
+          copy.type = "button";
+          copy.className = "copy";
+          copy.textContent = "Copy";
+          copy.setAttribute("aria-label", "Copy full record reference");
+          copy.addEventListener("click", async () => {
+            try {
+              await navigator.clipboard.writeText(record.digest);
+              copy.textContent = "Copied";
+              setTimeout(() => { copy.textContent = "Copy"; }, 1500);
+            } catch (error) {
+              message.textContent = "Could not copy reference: " + error.message;
+              message.className = "message error";
+              message.hidden = false;
+            }
+          });
+          referenceCell.append(reference, copy);
+
+          const issuerCell = document.createElement("td");
+          issuerCell.textContent = shortAddress(record.issuer);
+          issuerCell.title = record.issuer;
+          const issuedCell = document.createElement("td");
+          issuedCell.textContent = new Date(record.issuedAt * 1000).toLocaleString();
+          const statusCell = document.createElement("td");
+          const badge = document.createElement("span");
+          badge.className = "badge " + (record.revoked ? "revoked" : "valid");
+          badge.textContent = record.revoked ? "Revoked" : "Valid";
+          statusCell.append(badge);
+          row.append(referenceCell, issuerCell, issuedCell, statusCell);
+          recordsBody.append(row);
+        }
+        tableWrap.hidden = filtered.length === 0;
+        message.hidden = filtered.length > 0;
+        if (filtered.length === 0) {
+          message.className = "message";
+          message.textContent = certificates.length === 0
+            ? "No certificates have been issued yet."
+            : "No records match this filter.";
+        }
+        document.querySelector("#record-count").textContent =
+          filtered.length + " of " + certificates.length + " record" + (certificates.length === 1 ? "" : "s");
+      }
+
+      async function loadRecords() {
+        refreshButton.disabled = true;
+        message.hidden = false;
+        message.className = "message";
+        message.textContent = "Loading records from the blockchain…";
+        tableWrap.hidden = true;
+        try {
+          const [healthResponse, recordsResponse] = await Promise.all([
+            fetch("/api/health"),
+            fetch("/api/certificates")
+          ]);
+          const health = await healthResponse.json();
+          const result = await recordsResponse.json();
+          if (!healthResponse.ok) throw new Error(health.error || "Backend health check failed.");
+          if (!recordsResponse.ok) throw new Error(result.error || "Could not load certificate records.");
+          if (!Array.isArray(result.certificates)) throw new Error("The backend returned an invalid record list.");
+
+          certificates = result.certificates;
+          document.querySelector("#total-count").textContent = certificates.length;
+          document.querySelector("#valid-count").textContent = certificates.filter((item) => !item.revoked).length;
+          document.querySelector("#revoked-count").textContent = certificates.filter((item) => item.revoked).length;
+          document.querySelector("#service-status").textContent = "Connected · chain " + health.chainId;
+          document.querySelector("#service-dot").classList.add("online");
+          renderRecords();
+        } catch (error) {
+          document.querySelector("#service-status").textContent = "Registry unavailable";
+          document.querySelector("#service-dot").classList.remove("online");
+          message.textContent = error.message;
+          message.className = "message error";
+          message.hidden = false;
+          document.querySelector("#record-count").textContent = "Could not load records";
+        } finally {
+          refreshButton.disabled = false;
+        }
+      }
+
+      search.addEventListener("input", renderRecords);
+      refreshButton.addEventListener("click", loadRecords);
+      loadRecords();
+    </script>
+  </body>
+</html>

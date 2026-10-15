@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f6f7f4" />
+    <title>ClearCert — Certificate Registry</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="ClearCert home"><span class="brand-mark">C</span> clearcert</a>
+      <div class="wallet-area"><span id="connection-status" class="connection-status">Wallet not connected</span><button id="connect-wallet" class="button button-dark">Connect wallet</button></div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy"><p class="eyebrow">A simple public registry</p><h1>Trust the record.<br /><span>Keep details private.</span></h1><p class="hero-description">Issue a tamper-evident certificate record, then verify it with the holder’s details and private verification key.</p></div>
+        <div class="hero-card"><div class="hero-card-top"><span>ON-CHAIN RECORD</span><span class="live-dot"></span></div><div class="hash-lines"><i></i><i></i><i></i><i></i><i></i></div><div class="hero-card-footer"><span>Personal details stay off-chain</span><span>⌁</span></div></div>
+      </section>
+
+      <div id="network-warning" class="notice notice-warning" hidden></div>
+      <div id="api-warning" class="notice notice-warning" hidden></div>
+      <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
+
+      <section class="workspace-grid">
+        <section class="panel issue-panel">
+          <div class="panel-heading"><div><p class="eyebrow">ISSUER CONSOLE</p><h2>Issue a certificate</h2></div><span class="number-badge">01</span></div>
+          <p class="panel-intro">Only an approved issuer wallet can publish new records. Enter the certificate information exactly as it should be verified.</p>
+          <form id="issue-form" class="form-grid">
+            <label>Certificate holder<input name="holder" required maxlength="120" autocomplete="off" placeholder="e.g. Alex Morgan" /></label>
+            <label>Certificate ID<input name="certificateId" required maxlength="80" autocomplete="off" placeholder="e.g. CERT-2026-0142" /></label>
+            <label>Qualification<input name="qualification" required maxlength="120" autocomplete="off" placeholder="e.g. Diploma in Design" /></label>
+            <label>Issuing institution<input name="institution" required maxlength="120" autocomplete="organization" placeholder="e.g. Northstar Institute" /></label>
+            <label class="full-width">Issue date<input name="issueDate" type="date" required /></label>
+            <button class="button button-primary full-width" type="submit">Issue certificate <span>↗</span></button>
+          </form>
+          <div id="issued-key" class="key-card" hidden></div>
+          <details class="admin-tools"><summary>Issuer administration</summary><p>Connected contract owner can approve issuer wallet addresses.</p><form id="issuer-form" class="inline-form"><input name="issuerAddress" aria-label="Issuer wallet address" placeholder="0x… issuer wallet" required /><button class="button button-outline" type="submit">Approve issuer</button></form></details>
+        </section>
+
+        <section class="panel verify-panel">
+          <div class="panel-heading"><div><p class="eyebrow">PUBLIC LOOKUP</p><h2>Verify a certificate</h2></div><span class="number-badge number-badge-light">02</span></div>
+          <p class="panel-intro">Enter the same certificate information and the private verification key shared with the holder.</p>
+          <form id="verify-form" class="form-grid">
+            <label>Certificate holder<input name="holder" required maxlength="120" autocomplete="off" placeholder="Name on the certificate" /></label>
+            <label>Certificate ID<input name="certificateId" required maxlength="80" autocomplete="off" placeholder="Certificate ID" /></label>
+            <label>Qualification<input name="qualification" required maxlength="120" autocomplete="off" placeholder="Qualification" /></label>
+            <label>Issuing institution<input name="institution" required maxlength="120" autocomplete="off" placeholder="Institution" /></label>
+            <label class="full-width">Issue date<input name="issueDate" type="date" required /></label>
+            <label class="full-width">Private verification key<input name="secret" required autocomplete="off" placeholder="Paste the key provided by the issuer" /></label>
+            <button class="button button-dark full-width" type="submit">Check certificate <span>→</span></button>
+          </form>
+          <div id="verification-result" class="result-card" aria-live="polite" hidden></div>
+        </section>
+      </section>
+
+      <section class="panel certificate-list-panel" aria-labelledby="certificate-list-heading">
+        <div class="panel-heading">
+          <div><p class="eyebrow">ON-CHAIN REGISTRY</p><h2 id="certificate-list-heading">Issued certificates</h2></div>
+          <button id="refresh-certificates" class="button button-outline" type="button">Refresh list</button>
+        </div>
+        <p class="panel-intro">Public record references only. Holder names and certificate details remain private.</p>
+        <div id="certificate-list-status" class="certificate-list-status" role="status" aria-live="polite">Loading certificate records…</div>
+        <div class="certificate-table-wrap" hidden>
+          <table class="certificate-table">
+            <thead><tr><th>Record reference</th><th>Issuer</th><th>Issued</th><th>Status</th></tr></thead>
+            <tbody id="certificate-list"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="steps"><div><span>01</span><p><strong>Issuer creates a record</strong><br />A randomized digest is saved on-chain.</p></div><div><span>02</span><p><strong>Holder keeps their key</strong><br />The key is shared through a trusted channel.</p></div><div><span>03</span><p><strong>Anyone can verify</strong><br />Matching details prove the record exists.</p></div></section>
+    </main>
+    <footer><span>ClearCert · Local development starter</span><span>Records are public. Certificate details remain with the holder.</span></footer>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
